@@ -1,4 +1,4 @@
-name: 'ucpe deploy'
+name: 'ucpe '
 
 on:
   push:
