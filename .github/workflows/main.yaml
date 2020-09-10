@@ -167,5 +167,5 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
-    - name: Erase Terraform deploy
+    - name: Erase Terraform 
       run: terraform destroy -auto-approve 
