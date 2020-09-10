@@ -2,7 +2,7 @@
 #Hostname and hosts file setup plus installation of some pkgs
 - name: Set hostname
   hostname:
-    name: "{{ passed_in_hosts }}"
+    name: "{{ passed_in_hosts | regex_search('(a-z)*_(a-z)*$') }}"
   tags: base
 
 - name: Replace hosts file
