@@ -1,0 +1,32 @@
+---
+#Default variables file for sql-role
+mariadb_databases:
+  - name: ucpedb
+    init_script: files/data_dump.sql
+
+mariadb_users:
+  - name: ucpeuser
+    password: ucpeadmin
+    priv: '*.*:ALL,GRANT'
+    append_privs: 'yes'
+    host: '10.0.%.4'
+mariadb_root_password: ''
+mariadb_auth_unix_plugin: false
+
+mariadb_configure_swappiness: true
+mariadb_swappiness: "0"
+
+# 27 is default in /usr/share/doc/setup-*/uidgid
+mariadb_system_user:
+  name: 'mysql'
+  uid: 27
+  gid: 27
+  shell: '/sbin/nologin'
+  home: '/var/lib/mysql'
+  comment: 'MySQL Server'
+
+mariadb_logrotate:
+  configure: true
+  rotate: 3
+
+mariadb_service: mariadb

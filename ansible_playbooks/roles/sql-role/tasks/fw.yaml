@@ -1,0 +1,39 @@
+---
+#Config file for firewalld
+
+- name: Install Firewalld
+  yum:
+    name: firewalld
+    state: present
+  tags: mariadb 
+
+- name: Start firewalld
+  service:
+    name:  firewalld
+    state: started
+  tags: mariadb
+
+- name: Config firewalld
+  firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+  with_items:
+    - 22/tcp
+    - 80/tcp
+    - 3306/tcp
+  tags: mariadb
+
+- name: Reload service firewalld
+  systemd:
+    name: firewalld
+    state: reloaded
+  notify:
+  - enable firewalld
+  tags: mariadb
+
+
+
+    
+ 
+  

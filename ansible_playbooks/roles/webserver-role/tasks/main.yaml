@@ -1,0 +1,34 @@
+---
+#Main file for webserver-role
+- name: Install Apache 
+  yum:
+    name: httpd
+    state: present
+  tags: apache
+
+- name: Install needed packages
+  command: amazon-linux-extras install php7.2 ansible2 -y
+
+- name: Install OSCAP
+  yum:
+    name: "{{ package }}"
+    state: present
+  vars:
+    package:
+    - openscap-scanner
+    - scap-security-guide
+  tags: apache 
+
+- name: Configure Apache
+  include_tasks: config.yaml
+  tags: apache
+
+- name: Apply firewall
+  include_tasks: fw.yaml
+  tags: apache
+
+- name: Vulnerabilty fix set
+  include_tasks: v_fix.yaml
+  tags: apache
+  
+

@@ -1,0 +1,25 @@
+---
+#Hostname and hosts file setup plus installation of some pkgs
+- name: Set hostname
+  hostname:
+    name: "{{ passed_in_hosts }}"
+  tags: base
+
+- name: Replace hosts file
+  copy:
+    src: files/hosts_file
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: "0644"
+  tags: base
+
+- name: Install packages
+  yum:
+    name: "{{ package }} "
+    state: present
+  vars:
+    package:
+    - git
+    - lynx
+  tags: base

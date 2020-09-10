@@ -1,0 +1,5 @@
+---
+#Generates ansible playbook for fixing the OS security problems
+- name: Generate playbook with fixes
+  command: oscap xccdf generate fix --fix-type ansible --profile C2S --output amzn2-c2s-profile.yml /usr/share/xml/scap/ssg/content/ssg-amzn2-ds.xml
+

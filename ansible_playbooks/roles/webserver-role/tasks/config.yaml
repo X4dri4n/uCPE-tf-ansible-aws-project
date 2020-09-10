@@ -1,0 +1,40 @@
+---
+#Webserver config
+- name: Set file ownership for Apache document root
+  file:
+    path: /var/www/html/
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+  tags: apache
+
+- name: Configure test web page
+  template:
+    src: info.j2
+    dest: /var/www/html/info.php
+    owner: ec2-user
+    group: ec2-user
+    mode: 0644
+  tags: apache
+
+- name: Configure REST API page
+  template:
+    src: api.php.j2
+    dest: /var/www/html/api.php
+    owner: ec2-user
+    group: ec2-user
+    mode: 0644
+  tags: apache
+
+- name: Set httpd.conf file
+  copy:
+    src: files/httpd.conf
+    dest: /etc/httpd/conf/httpd.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+  - Start and enable Apache
+  tags: apache
+
+

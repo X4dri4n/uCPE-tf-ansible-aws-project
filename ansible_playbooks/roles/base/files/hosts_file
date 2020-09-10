@@ -1,0 +1,6 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+10.0.2.4    webserver1 
+10.0.3.4    webserver2 
+10.0.4.4    sqlserver

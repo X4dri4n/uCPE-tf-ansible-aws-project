@@ -1,0 +1,171 @@
+name: 'ucpe deploy'
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+
+jobs:
+  terraform-up:
+    name: 'Terraform deploy'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-central-1
+
+    - name: Create aws_profile
+      uses: Fooji/create-aws-profile-action@v1
+      with:
+        profile: default
+        region: eu-central-1
+        key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        secret: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Install boto3
+      run: pip install --upgrade --user boto3
+
+    - name: ssh_key add
+      run: |
+        mkdir ~/.ssh 
+        echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+        echo "${{ secrets.SSH_KEY_PUB }}" > ~/.ssh/id_rsa.pub
+        chmod 600 ~/.ssh/id_rsa 
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 0.12.29
+        terraform_wrapper: false
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    - name: Terraform Plan
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      run: terraform apply -auto-approve 
+
+    - name: Set envs
+      if: ${{ success() }}
+      run: |
+        set -a
+        . ./tf_ansible_vars_file.yaml
+        set +a
+        echo "::set-env name=ws1::$ws_vm1_IP"
+        echo "::set-env name=ws2::$ws_vm2_IP"
+        echo "::set-env name=sql::$sql_vm_IP"
+      
+    
+    - name: Scan with OSCAP webserver 1
+      uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: oscap xccdf eval --profile xccdf_org.ssgproject.content_profile_standard --results-arf arf.xml --report report.html /usr/share/xml/scap/ssg/content/ssg-amzn2-ds.xml
+        host: ${{ env.ws1 }}
+        username: ec2-user
+        privatekey: ${{ secrets.SSH_KEY }}
+
+    - name: Scan with OSCAP webserver 2
+      uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: oscap xccdf eval --profile xccdf_org.ssgproject.content_profile_standard --results-arf arf.xml --report report.html /usr/share/xml/scap/ssg/content/ssg-amzn2-ds.xml
+        host: ${{ env.ws2 }}
+        username: ec2-user
+        privatekey: ${{ secrets.SSH_KEY }}
+
+    - name: Scan with OSCAP sqlserver
+      uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: oscap xccdf eval --profile xccdf_org.ssgproject.content_profile_standard --results-arf arf.xml --report report.html /usr/share/xml/scap/ssg/content/ssg-amzn2-ds.xml
+        host: ${{ env.sql }}
+        username: ec2-user
+        privatekey: ${{ secrets.SSH_KEY }}
+
+    - name: Apply security fixes on webserver 1
+      uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: sudo ansible-playbook -i "localhost", --connection=local --extra-vars 'ansible_distribution=CentOS' -b amzn2-c2s-profile.yml
+        host: ${{ env.ws1 }}
+        username: ec2-user
+        privatekey: ${{ secrets.SSH_KEY }}
+
+    - name: Apply security fixes on webserver 2
+      uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: sudo ansible-playbook -i "localhost", --connection=local --extra-vars 'ansible_distribution=CentOS' -b amzn2-c2s-profile.yml
+        host: ${{ env.ws2 }}
+        username: ec2-user
+        privateKey: ${{ secrets.SSH_KEY}}
+   
+    - name: Apply security fixes on sqlserver
+      uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: sudo ansible-playbook -i "localhost", --connection=local --extra-vars 'ansible_distribution=CentOS' -b amzn2-c2s-profile.yml 
+        host: ${{ env.sql }}
+        username: ec2-user
+        privateKey: ${{ secrets.SSH_KEY}}
+
+    - name: Restart httpd on webserver 1
+      uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: sudo systemctl restart httpd
+        host: ${{ env.ws1 }}
+        username: ec2-user
+        privateKey: ${{ secrets.SSH_KEY}}
+
+    - name: Restart httpd on webserver 2
+      uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: sudo systemctl restart httpd
+        host: ${{ env.ws2 }}
+        username: ec2-user
+        privateKey: ${{ secrets.SSH_KEY}}
+
+  terraform-down:
+    name: 'Terraform destroy'
+    runs-on: ubuntu-latest
+
+    if: contains(github.event.pull_request.labels.*.name, 'aws down')
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-central-1
+
+    - name: ssh_key add
+      run: |
+        mkdir ~/.ssh
+        echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+        echo "${{ secrets.SSH_KEY_PUB }}" > ~/.ssh/id_rsa.pub
+        chmod 600 ~/.ssh/id_rsa
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 0.12.29
+        terraform_wrapper: false
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Erase Terraform deploy
+      run: terraform destroy -auto-approve 

@@ -1,0 +1,40 @@
+---
+#Main file for sql-role
+- name: Include vars
+  include_vars: var_list.yaml
+  tags: mariadb
+
+- name: Install packages
+  yum:
+    name: "{{ package }} "
+    state: present
+  vars:
+    package:
+    - mariadb-server
+    - MySQL-python
+    - openscap-scanner
+    - scap-security-guide
+  tags: mariadb
+
+- name: Install ansible
+  command: amazon-linux-extras install ansible2 -y
+
+- name: Configure MariaDB
+  include_tasks: config.yaml
+  tags: mariadb
+
+- name: Create and initialize databases
+  include_tasks: databases.yaml
+  tags: mariadb
+
+- name: Create users
+  include_tasks: users.yaml
+  tags: mariadb
+
+- name: Apply firewall
+  include_tasks: fw.yaml
+  tags: mariadb
+
+- name: Vulnerability fix set
+  include_tasks: v_fix.yaml
+  tags: mariadb

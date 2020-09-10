@@ -1,0 +1,6 @@
+---
+#Defaults variables file for webserver-role
+mariadb_db: ucpedb
+mariadb_user: ucpeuser
+mariadb_pass: ucpeadmin
+db_server: sqlserver

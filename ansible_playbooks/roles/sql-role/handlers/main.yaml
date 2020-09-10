@@ -1,0 +1,13 @@
+---
+
+- name: restart mariadb
+  service:
+    name: '{{ mariadb_service }}'
+    state: restarted
+    enabled: yes
+
+- name: enable firewalld
+  service:
+    name: firewalld
+    enabled: yes
+
