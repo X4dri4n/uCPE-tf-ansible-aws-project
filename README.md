@@ -1,4 +1,4 @@
-##uCPE-tf-ansible-aws-project
+## uCPE-tf-ansible-aws-project
 
 Using Terraform as IaC and Ansible for the configuration management, I designed and implemented the following solution:
 - On top of AWS, I deployed a VPC in which are residing four EC2 instances and an Application Loadbalancer;
@@ -9,12 +9,6 @@ Using Terraform as IaC and Ansible for the configuration management, I designed 
 - The servers were scanned for possible software vulnerabilities and the fixes required were applied;
 - The Loadbalancer responds to a custom URL;
 - The CI was done using GitHub actions; 
-
-**Table of Contents**
-
-[TOCM]
-
-[TOC]
 
 ### Assumptions
 
@@ -32,7 +26,7 @@ Using Terraform as IaC and Ansible for the configuration management, I designed 
 
 ### Project diagram
 
-![Project diagram](ucpeDiagram.png)
+![](images/Diagram.JPG)
 
 ### Prerequisites 
 
@@ -93,7 +87,7 @@ There are two Apache Webservers, with PHP7.2 backend, having identical configura
 
 `curl ucpe.swisscom.com`
 
-#####SQL server
+##### SQL server
 
 The SQL server is a MariaDB server, on which the following have been created, in order to test the functionality:
 * database user: ucpeuser (and related password)
@@ -115,7 +109,7 @@ The Ansible playbooks for the MariaDB configuration are based on the following G
 
 [ansible-role-mariadb.git](https://github.com/bertvv/ansible-role-mariadb)
 
-#####REST API
+##### REST API
 
 On webservers there is REST API implementation for SQL server, which was forked from the following GitHub repository:
 
@@ -127,12 +121,12 @@ By calling a GET from the client instance towards Webservers, a read response is
 
     {"records":[{"item_id":1,"content":"Get interviewed"},{"item_id":2,"content":"Get the job"},{"item_id":3,"content":"Do the job"},{"item_id":4,"content":"Love it"}]}
 
-#####GitHub CI
+##### GitHub CI
 
 The automation of the whole project was performed using GitHub CI implementation, with several GitHub actions.
 The workflow for the CI pipeline is composed of two jobs (terraform-up, terraform-down) and runs on ubuntu-latest version of GitHub provided runners. The terraform-up job is applying the whole configuration only on a push to master branch. On pull requests is just reaching the planification step.
 In order to destroy the whole configuration, a pull request with label *"aws down"* is needed.
 
-#####Connecting to client instance
+##### Connecting to client instance
 
 In order to access the client instance inside the VPC from the bastion VM, a Terraform output variable for its public IP is available in the GitHub CI workflow output.
