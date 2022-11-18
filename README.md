@@ -96,7 +96,6 @@ The SQL server is a MariaDB server, on which the following have been created, in
 Example:
 `MariaDB [(none)]> SELECT * FROM ucpedb.todo_list;`
 
-
     |---------|-----------------|
     | item_id | content         |
     |---------|-----------------|
