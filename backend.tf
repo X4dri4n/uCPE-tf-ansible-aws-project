@@ -5,6 +5,6 @@ terraform {
     region  = "eu-central-1"
     profile = "default"
     key     = "terraformstatefile"
-    bucket  = "statetfbucket44444"
+    bucket  = "statetfbucket4444"
   }
 }
