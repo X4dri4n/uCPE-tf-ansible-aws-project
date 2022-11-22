@@ -68,6 +68,7 @@ jobs:
         echo "ws1=$ws_vm1_IP" >> $GITHUB_ENV
         echo "ws2=$ws_vm2_IP" >> $GITHUB_ENV
         echo "sql=$sql_vm_IP" >> $GITHUB_ENV
+        
 #        echo "::set-env name=ws1::$ws_vm1_IP"
 #        echo "::set-env name=ws2::$ws_vm2_IP"
 #        echo "::set-env name=sql::$sql_vm_IP"
