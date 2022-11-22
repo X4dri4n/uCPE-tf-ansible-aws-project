@@ -35,10 +35,10 @@ jobs:
 
     - name: ssh_key add
       run: |
-        mkdir ~/.ssh 
+        mkdir ~/.ssh
         echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
         echo "${{ secrets.SSH_KEY_PUB }}" > ~/.ssh/id_rsa.pub
-        chmod 600 ~/.ssh/id_rsa 
+        chmod 600 ~/.ssh/id_rsa
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
@@ -57,7 +57,7 @@ jobs:
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-      run: terraform apply -auto-approve 
+      run: terraform apply -auto-approve
 
     - name: Set envs
       if: ${{ success() }}
@@ -65,11 +65,14 @@ jobs:
         set -a
         . ./tf_ansible_vars_file.yaml
         set +a
-        echo "::set-env name=ws1::$ws_vm1_IP"
-        echo "::set-env name=ws2::$ws_vm2_IP"
-        echo "::set-env name=sql::$sql_vm_IP"
-      
-    
+        echo "ws1=$ws_vm1_IP" >> $GITHUB_ENV
+        echo "ws2=$ws_vm2_IP" >> $GITHUB_ENV
+        echo "sql=$sql_vm_IP" >> $GITHUB_ENV
+#        echo "::set-env name=ws1::$ws_vm1_IP"
+#        echo "::set-env name=ws2::$ws_vm2_IP"
+#        echo "::set-env name=sql::$sql_vm_IP"
+
+
     - name: Scan with OSCAP webserver 1
       uses: garygrossgarten/github-action-ssh@release
       with:
@@ -109,11 +112,11 @@ jobs:
         host: ${{ env.ws2 }}
         username: ec2-user
         privateKey: ${{ secrets.SSH_KEY}}
-   
+
     - name: Apply security fixes on sqlserver
       uses: garygrossgarten/github-action-ssh@release
       with:
-        command: sudo ansible-playbook -i "localhost", --connection=local --extra-vars 'ansible_distribution=CentOS' -b amzn2-c2s-profile.yml 
+        command: sudo ansible-playbook -i "localhost", --connection=local --extra-vars 'ansible_distribution=CentOS' -b amzn2-c2s-profile.yml
         host: ${{ env.sql }}
         username: ec2-user
         privateKey: ${{ secrets.SSH_KEY}}
@@ -168,4 +171,4 @@ jobs:
       run: terraform init
 
     - name: Erase Terraform deploy
-      run: terraform destroy -auto-approve 
+      run: terraform destroy -auto-approve
