@@ -1,5 +1,5 @@
 ## uCPE-tf-ansible-aws-project
-Deploy
+Deployment
 Using Terraform as IaC and Ansible for the configuration management, I designed and implemented the following solution:
 - On top of AWS, I deployed a VPC in which are residing four EC2 instances and an Application Loadbalancer;
 - One EC2 instance is used as the client, the other two instances are two identical Apache servers connected to a third EC2 instance which represents the SQL server (MariaDB-server)
